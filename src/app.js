@@ -9,9 +9,14 @@ app.use(cors({
 }))
 
 //configuration
-app.use(express.json({limit:"20kb"}))
+app.use(express.json({limit:"200kb"}))
 app.use(express.urlencoded({extended:true , limit:"15kb"}))
 app.use(express.static("public"))
 app.use(cookieParser())
+
+
+ import routerIndex from "./routes/index.routes.js";
+ app.use("/api/v1" , routerIndex);
+
 
 export {app};
