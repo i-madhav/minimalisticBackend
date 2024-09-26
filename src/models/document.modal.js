@@ -8,10 +8,11 @@ const documentSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: "User"
     },
-    sharedWith:{
-        type:mongoose.Schema.ObjectId,
-        ref:"User"
-    }
+    sharedWith: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: "User"
+        }]
 }, { timestamps: true })
 
-export const Document = mongoose.model("Document",documentSchema);
+export const Document = mongoose.model("Document", documentSchema);
