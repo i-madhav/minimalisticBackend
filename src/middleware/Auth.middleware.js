@@ -13,4 +13,4 @@ export const AuthenticateUser = asyncHandler(async(req , res , next) => {
 
     req.user = user;
     next();
-})
+});
