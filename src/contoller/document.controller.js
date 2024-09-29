@@ -1,9 +1,9 @@
-import { Document } from "../models/document.modal";
-import ApiError from "../utils/ApiError";
-import ApiResponse from "../utils/ApiResponse";
-import { asyncHandler } from "../utils/AsyncHandler";
+import { Document } from "../models/document.modal.js";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/AsyncHandler.js";
 
-const generateAndSaveDocument = asyncHandler(async (req, res) => {
+const generateDocument = asyncHandler(async (req, res) => {
     const { id, content, userid } = req.body;
 
     if (userid && !id) {
@@ -30,17 +30,26 @@ const generateAndSaveDocument = asyncHandler(async (req, res) => {
     }
 });
 
-const saveDocument = asyncHandler(async(req,res) => {
-    if (id && userid) {
-        // for logged in
+const saveDocument = async(id , userid , content , sharedWith) => {
+    if (id && userid && sharedWith) {
+        // for logged in and he has restricted document to shared only
         // for save document
-    } else if (id) {
-        // for non logged-in user
+
+
+    } else if (id && content){
+        // for non logged-in user and logged user too if document is not in sharedwith mode 
         // save document
+        const dataContent = await Document.findById(id);
+        if(!dataContent) throw new ApiError(404 , "couldn't find the document");
+
+        dataContent.content = content;
+        await dataContent.save({validateBeforeSave:false});
+        return dataContent;
     }
-})
+};
 
 
+// sharedwith will be handled in fetch documentbecause if a shared with is being used then if a non shared user try access the document , the document won't even get fetched to him!!
 const fetchDocument = asyncHandler(async (req, res) => {
     const type = req.query.type;
     if (type === "LoggedInUser") {
@@ -52,5 +61,9 @@ const fetchDocument = asyncHandler(async (req, res) => {
 });
 
 const numberDocumentUserCreated = asyncHandler(async(req , res) => {
-
+  const docs = await Document.find({owner:req.user._id}).populate('owner');
+  return res.status(200).json(new ApiResponse(200 , "Number Document Fetched") , docs)
 })
+
+
+export {generateDocument , saveDocument , fetchDocument , numberDocumentUserCreated}

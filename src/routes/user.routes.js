@@ -6,6 +6,6 @@ const routerUser = Router();
 routerUser.route("/signup").post(signupUser);
 routerUser.route("/signin").post(signinUser);
 routerUser.route("/signout").post(AuthenticateUser , signoutUser);
-routerUser.route("/user/me").get(AuthenticateUser , userInformation)
+routerUser.route("/me").get(AuthenticateUser , userInformation)
 
 export default routerUser;
