@@ -111,5 +111,13 @@ const signoutUser = asyncHandler(async (req, res) => {
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
         .json(new ApiResponse(200, "user signedout successfully"))
-})
-export { signupUser, signinUser , signoutUser }
+});
+
+const userInformation = asyncHandler(async(req , res) => {
+    const user = await User.findById(req.user._id).select("-password -refreshToken")
+    if(!user) throw new ApiError(404,"user is not logged-in/unauthenticated-user");
+
+    return res.status(200).json(new ApiResponse(200,"user  information fetched successfully",user))
+});
+
+export { signupUser, signinUser , signoutUser , userInformation}
