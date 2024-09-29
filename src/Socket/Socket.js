@@ -1,5 +1,4 @@
 import { saveDocument } from "../contoller/document.controller.js"
-
 export async function handleSocketDocument(io) {
     io.on('connection' , (socket) => {
         socket.on('updatedDataFromTheClient' , async (data) => {
@@ -17,4 +16,4 @@ export async function handleSocketDocument(io) {
             }
         })
     })
-}
+};
