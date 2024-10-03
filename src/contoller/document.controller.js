@@ -1,3 +1,4 @@
+import req from "express/lib/request.js";
 import { Document } from "../models/document.modal.js";
 import { User } from "../models/user.modal.js";
 import ApiError from "../utils/ApiError.js";
@@ -82,10 +83,20 @@ const fetchDocument = asyncHandler(async (req, res) => {
     }
 });
 
+const addSharedWithToDocument = asyncHandler(async(req , res) => {
+    const{id , userid , shareWith} = req.body;
+    if(userid != req.user._id) throw new ApiError(500 , "You do not have permission to perform this action");
+    const document = await Document.findById(id)
+    if(!document) throw new ApiError(404 , "couldn't find document");
+    document.sharedWith.push(shareWith);
+    await document.save({validateBeforeSave:false});
+    return res.status(200).json(new ApiResponse(200,"sharedwith_user added successfully",document));
+})
+
 const numberDocumentUserCreated = asyncHandler(async (req, res) => {
     const docs = await Document.find({ owner: req.user._id }).populate('owner');
     return res.status(200).json(new ApiResponse(200, "Number Document Fetched"), docs)
-})
+});
 
 
-export { generateDocument, saveDocument, fetchDocument, numberDocumentUserCreated };
+export { generateDocument, saveDocument, fetchDocument, numberDocumentUserCreated , addSharedWithToDocument};
