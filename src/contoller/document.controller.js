@@ -1,4 +1,5 @@
 import { Document } from "../models/document.modal.js";
+import { User } from "../models/user.modal.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
@@ -62,10 +63,22 @@ const saveDocument = async (id, userid, content, sharedWith) => {
 const fetchDocument = asyncHandler(async (req, res) => {
     const type = req.query.type;
     if (type === "LoggedInUser") {
+        const {id , userid , sharedWith} = req.body;
+        const document = await Document.findById(id);
 
-    } else if (type === "NonLoggedInUser") {
+        const isOwner = document.owner.equals(userid);
+        const isSharedwith  = document.sharedWith.some((item) => item.equals(sharedWith))
+
+        if(isOwner || isSharedwith){
+            return res.status(200).json(200 , "document fetched your supreme people" , document);
+        }
+
+    }else if (type === "NonLoggedInUser"){
         const { id } = req.body;
+        const document = await Document.findById(id).select("-owner -sharedWith");
+        if(!document) throw new ApiError(404 , "document doesn't exist");
 
+        return res.status(200).json(new ApiResponse(200 , "document fetched" , document))
     }
 });
 
@@ -75,4 +88,4 @@ const numberDocumentUserCreated = asyncHandler(async (req, res) => {
 })
 
 
-export { generateDocument, saveDocument, fetchDocument, numberDocumentUserCreated }
+export { generateDocument, saveDocument, fetchDocument, numberDocumentUserCreated };
