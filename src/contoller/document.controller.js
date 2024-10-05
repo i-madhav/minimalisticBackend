@@ -95,6 +95,7 @@ const addSharedWithToDocument = asyncHandler(async(req , res) => {
 
 const numberDocumentUserCreated = asyncHandler(async (req, res) => {
     const docs = await Document.find({ owner: req.user._id }).populate('owner');
+    if(docs.length == 0) throw new ApiError(404 , "No Document Found");
     return res.status(200).json(new ApiResponse(200, "Number Document Fetched"), docs)
 });
 
