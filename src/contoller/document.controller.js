@@ -86,7 +86,7 @@ const fetchDocument = asyncHandler(async (req, res) => {
 const addSharedWithToDocument = asyncHandler(async (req, res) => {
     const { id, userid, shareWith } = req.body;
     if (userid != req.user._id) throw new ApiError(500, "You do not have permission to perform this action");
-    const document = await Document.findById(id)
+    const document = await Document.findById(id);
     if (!document) throw new ApiError(404, "couldn't find document");
     document.sharedWith.push(shareWith);
     await document.save({ validateBeforeSave: false });
