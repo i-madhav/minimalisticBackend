@@ -7,14 +7,12 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 
 const generateDocument = asyncHandler(async (req, res) => {
     const { id, userid } = req.body;
-
     if (userid && !id) {
         // document creation for logged-in user
         const document = await Document.create({
             content: " ",
             owner: userid
         });
-
         if (!document) throw new ApiError(500, "unable to create document");
         return res.status(200).json(200, "document created successfully for logged-in user", document);
 
@@ -44,7 +42,7 @@ const saveDocument = async (id, userid, content, sharedWith) => {
             documentContent.content = content;
             await documentContent.save({ validateBeforeSave: false });
             return documentContent;
-        }else{
+        } else {
             return "You do not have access to this document"
         }
     } else if (id && content) {
@@ -64,40 +62,42 @@ const saveDocument = async (id, userid, content, sharedWith) => {
 const fetchDocument = asyncHandler(async (req, res) => {
     const type = req.query.type;
     if (type === "LoggedInUser") {
-        const {id , userid , sharedWith} = req.body;
+        const { id, userid } = req.body;
         const document = await Document.findById(id);
-
-        const isOwner = document.owner.equals(userid);
-        const isSharedwith  = document.sharedWith.some((item) => item.equals(sharedWith))
-
-        if(isOwner || isSharedwith){
-            return res.status(200).json(200 , "document fetched your supreme people" , document);
-        }
-
-    }else if (type === "NonLoggedInUser"){
+        if(document.sharedWith.length == 0){
+            return res.status(200).json(new ApiResponse(200 , "document information is fetched" , document));
+        }else{
+            const isOwner = document.owner.equals(userid);
+            const isSharedwith = document.sharedWith.some((item) => item.equals(userid))
+            if (!isOwner && !isSharedwith) throw new ApiError(403, "you do not have access to the document");
+            if (isOwner || isSharedwith) {
+                return res.status(200).json(new ApiResponse(200 , "document information is fetched", document));
+            }
+        }  
+    } else if (type === "NonLoggedInUser"){
         const { id } = req.body;
         const document = await Document.findById(id).select("-owner -sharedWith");
-        if(!document) throw new ApiError(404 , "document doesn't exist");
+        if (!document) throw new ApiError(404, "document doesn't exist");
 
-        return res.status(200).json(new ApiResponse(200 , "document fetched" , document))
+        return res.status(200).json(new ApiResponse(200, "document fetched", document))
     }
 });
 
-const addSharedWithToDocument = asyncHandler(async(req , res) => {
-    const{id , userid , shareWith} = req.body;
-    if(userid != req.user._id) throw new ApiError(500 , "You do not have permission to perform this action");
+const addSharedWithToDocument = asyncHandler(async (req, res) => {
+    const { id, userid, shareWith } = req.body;
+    if (userid != req.user._id) throw new ApiError(500, "You do not have permission to perform this action");
     const document = await Document.findById(id)
-    if(!document) throw new ApiError(404 , "couldn't find document");
+    if (!document) throw new ApiError(404, "couldn't find document");
     document.sharedWith.push(shareWith);
-    await document.save({validateBeforeSave:false});
-    return res.status(200).json(new ApiResponse(200,"sharedwith_user added successfully",document));
+    await document.save({ validateBeforeSave: false });
+    return res.status(200).json(new ApiResponse(200, "sharedwith_user added successfully", document));
 })
 
 const numberDocumentUserCreated = asyncHandler(async (req, res) => {
     const docs = await Document.find({ owner: req.user._id }).populate('owner');
-    if(docs.length == 0) throw new ApiError(404 , "No Document Found");
+    if (docs.length == 0) throw new ApiError(404, "No Document Found");
     return res.status(200).json(new ApiResponse(200, "Number Document Fetched"), docs)
 });
 
 
-export { generateDocument, saveDocument, fetchDocument, numberDocumentUserCreated , addSharedWithToDocument};
+export { generateDocument, saveDocument, fetchDocument, numberDocumentUserCreated, addSharedWithToDocument };
