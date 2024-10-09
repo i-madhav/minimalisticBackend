@@ -3,6 +3,8 @@ export async function handleSocketDocument(io) {
     io.on('connection' , (socket) => {
         socket.on('updatedDataFromTheClient' , async (data) => {
             try {
+                console.log(data);
+                
                 const response = await saveDocument(data.id , data.userid , data.content , data.sharedWith);
                 socket.emit("serverResponse" , {
                     status:200,

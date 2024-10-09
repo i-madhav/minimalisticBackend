@@ -88,6 +88,8 @@ const addSharedWithToDocument = asyncHandler(async (req, res) => {
     if (userid != req.user._id) throw new ApiError(500, "You do not have permission to perform this action");
     const document = await Document.findById(id);
     if (!document) throw new ApiError(404, "couldn't find document");
+    const sharewithguy = await User.findOne({email:shareWith});
+    if(!sharewithguy) throw new ApiError(404 , "User you are trying to add is not signed in , please make sure user is a existing user of the document")
     document.sharedWith.push(shareWith);
     await document.save({ validateBeforeSave: false });
     return res.status(200).json(new ApiResponse(200, "sharedwith_user added successfully", document));
