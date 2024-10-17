@@ -11,9 +11,9 @@ export async function handleSocketDocument(io) {
                     document:response
                 });
             } catch (error) {
-                socket.emit("serverResponse",{
+                socket.emit("serverResponse", {
                     status:500,
-                    document:error
+                    document:error 
                 })
             }
         })
