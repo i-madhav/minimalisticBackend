@@ -65,7 +65,7 @@ const fetchDocument = asyncHandler(async (req, res) => {
         const { id, userid } = req.body;
         const document = await Document.findById(id);
         if(document.sharedWith.length == 0){
-            return res.status(200).json(new ApiResponse(200 , "document information is fetched" , document));
+            return res.status(200).json(new ApiResponse(200 , "document information is fetched you special g" , document));
         }else{
             const isOwner = document.owner.equals(userid);
             const isSharedwith = document.sharedWith.some((item) => item.equals(userid))

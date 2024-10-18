@@ -83,8 +83,6 @@ const signinUser = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,    
         secure: true,                    
-        domain: "localhost",   
-        sameSite: "Lax" 
     }
 
     return res.status(200)
@@ -107,8 +105,6 @@ const signoutUser = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,    
         secure: true,                   
-        domain: "localhost",   
-        sameSite: "Lax" 
     }
 
     return res.status(200)
