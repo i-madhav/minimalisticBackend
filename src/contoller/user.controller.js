@@ -122,4 +122,8 @@ const userInformation = asyncHandler(async(req , res) => {
     return res.status(200).json(new ApiResponse(200,"user  information fetched successfully",user))
 });
 
-export { signupUser, signinUser , signoutUser , userInformation}
+const serverActive = asyncHandler(async(req , res) => {
+    return res.status(200).json(new ApiResponse(200,"server is up and running"))
+})
+
+export { signupUser, signinUser , signoutUser , userInformation , serverActive}
