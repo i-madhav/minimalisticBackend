@@ -77,6 +77,9 @@ const fetchDocument = asyncHandler(async (req, res) => {
     } else if (type === "NonLoggedInUser"){
         const { id } = req.body;
         const document = await Document.findById(id).select("-owner -sharedWith");
+        if(document.sharedWith.length > 0){
+            throw new ApiError(403 , "You do not have access to this document");
+        }
         if (!document) throw new ApiError(404, "document doesn't exist");
 
         return res.status(200).json(new ApiResponse(200, "document fetched", document))
@@ -90,7 +93,7 @@ const addSharedWithToDocument = asyncHandler(async (req, res) => {
     if (!document) throw new ApiError(404, "couldn't find document");
     const sharewithguy = await User.findOne({email:shareWith});
     if(!sharewithguy) throw new ApiError(404 , "User you are trying to add is not signed in , please make sure user is a existing user of the document")
-    document.sharedWith.push(shareWith);
+    document.sharedWith.push(sharewithguy._id);
     await document.save({ validateBeforeSave: false });
     return res.status(200).json(new ApiResponse(200, "sharedwith_user added successfully", document));
 })
