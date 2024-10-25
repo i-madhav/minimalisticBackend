@@ -74,7 +74,7 @@ const fetchDocument = asyncHandler(async (req, res) => {
                     const response = {document,shareWithEmail};
                     return res.status(200).json(new ApiResponse(200, "document information is fetched", response));
                 }else{
-                    const response = {document};
+                    const response = {document:document};
                     return res.status(200).json(new ApiResponse(200, "document information is fetched", response));
                 }
             }
