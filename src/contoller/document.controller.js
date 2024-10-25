@@ -70,8 +70,13 @@ const fetchDocument = asyncHandler(async (req, res) => {
             console.log(`isOwner ${isOwner} Owner ${Owner} isSharedWith ${isSharedwith}`);
             if (!Owner || !isSharedwith) throw new ApiError(403, "you do not have access to the document");
             if (Owner || isSharedwith) {
-                const response = {document,shareWithEmail}
-                return res.status(200).json(new ApiResponse(200, "document information is fetched", response));
+                if(shareWithEmail.length > 0){
+                    const response = {document,shareWithEmail};
+                    return res.status(200).json(new ApiResponse(200, "document information is fetched", response));
+                }else{
+                    const response = {document};
+                    return res.status(200).json(new ApiResponse(200, "document information is fetched", response));
+                }
             }
         }
     } else if (type === "NonLoggedInUser") {
