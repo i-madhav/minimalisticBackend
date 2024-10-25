@@ -4,7 +4,7 @@ export async function handleSocketDocument(io) {
         socket.on('updatedDataFromTheClient' , async (data) => {
             try {
                 const response = await saveDocument(data.id , data.userid , data.content , data.sharedWith);
-                socket.emit("serverResponse" , {
+                socket.broadcast.emit("serverResponse" , {
                     status:200,
                     document:response
                 });
