@@ -55,11 +55,11 @@ const fetchDocument = asyncHandler(async (req, res) => {
     if (type === "LoggedInUser") {
         const { id, userid } = req.body;
         const document = await Document.findById(id);
-        if (document.sharedWith === undefined) {
+        if (document.sharedWith.length === 0) {
             return res.status(200).json(new ApiResponse(200, "document information is fetched you special g", document));
         } else {
             const isOwner = await User.findById(userid);
-            const Owner = document.owner.equals(isOwner._id);;
+            const Owner = document.owner.equals(isOwner._id);
             const isSharedwith = document.sharedWith.some((item) => item.equals(userid))
             const shareWithEmail = await Promise.all(
                 document.sharedWith.map(async (item) => {
@@ -67,6 +67,7 @@ const fetchDocument = asyncHandler(async (req, res) => {
                     return user.email;
                 })
             );
+            console.log(`isOwner ${isOwner} Owner ${Owner} isSharedWith ${isSharedwith}`);
             if (!Owner || !isSharedwith) throw new ApiError(403, "you do not have access to the document");
             if (Owner || isSharedwith) {
                 const response = {document,shareWithEmail}
