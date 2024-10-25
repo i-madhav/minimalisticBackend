@@ -8,18 +8,16 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 const generateDocument = asyncHandler(async (req, res) => {
     const { id, userid } = req.body;
     if (userid && !id) {
-        // document creation for logged-in user
         const document = await Document.create({
             content: " ",
             owner: userid
         });
         if (!document) throw new ApiError(500, "unable to create document");
-        return res.status(200).json(200, "document created successfully for logged-in user", document);
+        
+        return res.status(200)
+        .json(new ApiResponse(200, "document created successfully", document))
 
     } else if (!userid && !id) {
-        // user is not logged in and is trying to create a document
-        // document modal will only have a id and content which is empty 
-        // and we will send id to the client
         const document = await Document.create({
             content: ""
         });
