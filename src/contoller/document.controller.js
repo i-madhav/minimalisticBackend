@@ -32,8 +32,6 @@ const generateDocument = asyncHandler(async (req, res) => {
 
 const saveDocument = async (id, userid, content, sharedWith) => {
     if (id && userid && sharedWith.length > 0) {
-        // for logged in and he has restricted document to shared only
-        // for save document
         const documentContent = await Document.findById(id);
         if (!documentContent) throw new ApiError(404, "Document not found");
         const isOwner = documentContent.owner.equals(userid);
@@ -46,42 +44,44 @@ const saveDocument = async (id, userid, content, sharedWith) => {
             return "You do not have access to this document"
         }
     } else if (id && content) {
-        // for non logged-in user and logged user too if document is not in sharedwith mode 
-        // save document
         const dataContent = await Document.findById(id);
         if (!dataContent) throw new ApiError(404, "couldn't find the document");
-
         dataContent.content = content;
         await dataContent.save({ validateBeforeSave: false });
         return dataContent;
     }
 };
 
-
-// sharedwith will be handled in fetch documentbecause if a shared with is being used then if a non shared user try access the document , the document won't even get fetched to him!!
 const fetchDocument = asyncHandler(async (req, res) => {
     const type = req.query.type;
     if (type === "LoggedInUser") {
         const { id, userid } = req.body;
         const document = await Document.findById(id);
-        if(document.sharedWith.length == 0){
-            return res.status(200).json(new ApiResponse(200 , "document information is fetched you special g" , document));
-        }else{
-            const isOwner = document.owner.equals(userid);
+        if (document.sharedWith === undefined) {
+            return res.status(200).json(new ApiResponse(200, "document information is fetched you special g", document));
+        } else {
+            const isOwner = await User.findById(userid);
+            const Owner = document.owner.equals(isOwner._id);;
             const isSharedwith = document.sharedWith.some((item) => item.equals(userid))
-            if (!isOwner && !isSharedwith) throw new ApiError(403, "you do not have access to the document");
-            if (isOwner || isSharedwith) {
-                return res.status(200).json(new ApiResponse(200 , "document information is fetched", document));
+            const shareWithEmail = await Promise.all(
+                document.sharedWith.map(async (item) => {
+                    const user = await User.findById(item);
+                    return user.email;
+                })
+            );
+            if (!Owner || !isSharedwith) throw new ApiError(403, "you do not have access to the document");
+            if (Owner || isSharedwith) {
+                const response = {document,shareWithEmail}
+                return res.status(200).json(new ApiResponse(200, "document information is fetched", response));
             }
-        }  
-    } else if (type === "NonLoggedInUser"){
+        }
+    } else if (type === "NonLoggedInUser") {
         const { id } = req.body;
-        const document = await Document.findById(id).select("-owner -sharedWith");
-        if(document.sharedWith.length > 0){
-            throw new ApiError(403 , "You do not have access to this document");
+        const document = await Document.findById(id).select("-owner");
+        if (document.sharedWith.length !== 0) {
+            throw new ApiError(403, "You do not have access to this document");
         }
         if (!document) throw new ApiError(404, "document doesn't exist");
-
         return res.status(200).json(new ApiResponse(200, "document fetched", document))
     }
 });
@@ -91,8 +91,10 @@ const addSharedWithToDocument = asyncHandler(async (req, res) => {
     if (userid != req.user._id) throw new ApiError(500, "You do not have permission to perform this action");
     const document = await Document.findById(id);
     if (!document) throw new ApiError(404, "couldn't find document");
-    const sharewithguy = await User.findOne({email:shareWith});
-    if(!sharewithguy) throw new ApiError(404 , "User you are trying to add is not signed in , please make sure user is a existing user of the document")
+    const sharewithguy = await User.findOne({ email: shareWith });
+    if (!sharewithguy) throw new ApiError(404, "User you are trying to add is not signed in , please make sure user is a existing user of the document");
+    const user = await User.findById(userid);
+    document.owner = user._id;
     document.sharedWith.push(sharewithguy._id);
     await document.save({ validateBeforeSave: false });
     return res.status(200).json(new ApiResponse(200, "sharedwith_user added successfully", document));

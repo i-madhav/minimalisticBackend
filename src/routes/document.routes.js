@@ -9,6 +9,6 @@ routerDocument.route("/fetch").post(fetchDocument);
 
 // protected route
 routerDocument.route("/user").get(AuthenticateUser,numberDocumentUserCreated)
-routerDocument.route("/sharedwith/add").post(AuthenticateUser , addSharedWithToDocument);
+routerDocument.route("/sharedwith/add").post(AuthenticateUser,addSharedWithToDocument);
 
 export default routerDocument;
